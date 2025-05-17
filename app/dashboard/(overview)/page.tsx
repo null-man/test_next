@@ -5,11 +5,20 @@ import { lusitana } from '@/app/ui/fonts';
 import { 
   fetchRevenue, fetchLatestInvoices, fetchCardData
 } from '@/app/lib/data';
+import pool from '@/app/lib/db';
 
 export default async function Page() {
   const revenue = await fetchRevenue();
   const latestInvoices = await fetchLatestInvoices();
   const { totalPaidInvoices, totalPendingInvoices, numberOfInvoices, numberOfCustomers } = await fetchCardData();
+
+  try {
+    const [rows] = await pool.query('SELECT * FROM cmf_wxbot_babyfood');
+    console.log(rows);
+  } catch (error) {
+    console.error(error);
+  }
+
   return (
     <main>
       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>

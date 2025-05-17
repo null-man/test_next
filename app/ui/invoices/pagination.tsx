@@ -4,9 +4,21 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { generatePagination } from '@/app/lib/utils';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 
 export default function Pagination({ totalPages }: { totalPages: number }) {
   // NOTE: Uncomment this code in Chapter 11
+
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+  const currentPage = Number(searchParams.get('page')) || 1;
+
+  const createPageURL = (page: number | string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', page.toString());
+    replace(`${pathname}?${params.toString()}`);
+  };
 
   // const allPages = generatePagination(currentPage, totalPages);
 
@@ -14,26 +26,32 @@ export default function Pagination({ totalPages }: { totalPages: number }) {
     <>
       {/*  NOTE: Uncomment this code in Chapter 11 */}
 
-      {/* <div className="inline-flex">
+      <div className="inline-flex">
         <PaginationArrow
-          direction="left"
-          href={createPageURL(currentPage - 1)}
+          direction="left" 
+          href={`${pathname}?${new URLSearchParams({
+            ...Object.fromEntries(searchParams.entries()),
+            page: (currentPage - 1).toString(),
+          })}`}
           isDisabled={currentPage <= 1}
         />
 
         <div className="flex -space-x-px">
-          {allPages.map((page, index) => {
+          {generatePagination(currentPage, totalPages).map((page, index) => {
             let position: 'first' | 'last' | 'single' | 'middle' | undefined;
 
             if (index === 0) position = 'first';
-            if (index === allPages.length - 1) position = 'last';
-            if (allPages.length === 1) position = 'single';
+            if (index === generatePagination(currentPage, totalPages).length - 1) position = 'last';
+            if (generatePagination(currentPage, totalPages).length === 1) position = 'single';
             if (page === '...') position = 'middle';
 
             return (
               <PaginationNumber
                 key={`${page}-${index}`}
-                href={createPageURL(page)}
+                href={`${pathname}?${new URLSearchParams({
+                  ...Object.fromEntries(searchParams.entries()),
+                  page: page.toString(),
+                })}`}
                 page={page}
                 position={position}
                 isActive={currentPage === page}
@@ -44,10 +62,13 @@ export default function Pagination({ totalPages }: { totalPages: number }) {
 
         <PaginationArrow
           direction="right"
-          href={createPageURL(currentPage + 1)}
+          href={`${pathname}?${new URLSearchParams({
+            ...Object.fromEntries(searchParams.entries()),
+            page: (currentPage + 1).toString(),
+          })}`}
           isDisabled={currentPage >= totalPages}
         />
-      </div> */}
+      </div>
     </>
   );
 }

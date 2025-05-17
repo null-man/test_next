@@ -177,6 +177,7 @@ export async function fetchCustomers() {
       ORDER BY name ASC
     `;
 
+    console.log(customers);
     return customers;
   } catch (err) {
     console.error('Database Error:', err);
