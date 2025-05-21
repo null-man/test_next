@@ -11,48 +11,33 @@ export default async function Page() {
   const revenue = await fetchRevenue();
   const latestInvoices = await fetchLatestInvoices();
   const { totalPaidInvoices, totalPendingInvoices, numberOfInvoices, numberOfCustomers } = await fetchCardData();
-  
-  let babyFoodData: any[] = []; // Renamed variable to store raw data
+
   try {
     const [rows] = await pool.query('SELECT * FROM cmf_wxbot_babyfood');
-    // Ensure 'rows' is an array. Type assertion might be needed if 'rows' type is complex.
-    if (Array.isArray(rows)) {
-      babyFoodData = rows;
-    } else {
-      // Handle cases where rows might not be an array as expected, e.g., log a warning.
-      console.warn("Database query did not return an array for baby food data.");
-      babyFoodData = []; // Default to empty array to prevent map errors
-    }
-    // console.log(babyFoodData); // Now logs the data that will be mapped
+    console.log(rows);
   } catch (error) {
-    console.error('Failed to fetch baby food data:', error);
-    babyFoodData = []; // Ensure it's an array in case of error
+    console.error(error);
   }
 
   return (
     <main>
-      
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4 lg:grid-cols-4">
-        {babyFoodData.map((row: any) => (
-          <div
-            key={row.id} // Use a unique id from the row data for the key
-            // Combined classNames from the previous outer and inner divs.
-            // Removed mb-2 to rely on grid gap. Added rounded-lg and shadow for potentially better aesthetics.
-            className="cursor-pointer hover:bg-gray-100 transition-colors p-4 border rounded-lg shadow-md"
-          >
-            <h3 className="font-bold text-md mb-1">{row.title}</h3>
-            {/* Added whitespace-pre-wrap to preserve newlines and spaces in the content */}
-            <p className="text-gray-700 text-sm whitespace-pre-wrap mb-2">{row.content}</p>
-            <div className="mt-1 text-xs text-gray-500">
-              <p>{row.msg}</p>
-              <p className="mt-1">
-                发送时间: {row.send_time instanceof Date ? row.send_time.toLocaleString() : String(row.send_time)}
-              </p>
-            </div>
-          </div>
-        ))}
+      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
+        仪表板
+      </h1>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Card title="已收款" value={totalPaidInvoices} type="collected" />
+        <Card title="待处理" value={totalPendingInvoices} type="pending" />
+        <Card title="总发票数" value={numberOfInvoices} type="invoices" />
+        <Card
+          title="总客户数"
+          value={numberOfCustomers}
+          type="customers"
+        />
       </div>
-     
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
+        <RevenueChart revenue={revenue}  />
+        <LatestInvoices latestInvoices={latestInvoices} />
+      </div>
     </main>
   );
 }
